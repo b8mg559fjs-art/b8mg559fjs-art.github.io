@@ -3,31 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Aggregates Pricing App</title>
+    <title>Aggregates Pricing App - Secure Access</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Supabase JS Client for Secure Authentication -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
-<body class="bg-slate-900 text-slate-100 font-sans min-h-screen flex items-center justify-center px-4">
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen py-6 px-4">
 
-    <div class="max-w-md w-full bg-slate-800 rounded-2xl shadow-2xl p-8 border border-slate-700">
-        <div class="text-center mb-8">
-            <h1 class="text-2xl font-bold tracking-tight">🏗️ Authorized Access</h1>
-            <p class="text-slate-400 text-sm mt-1">Sign in to access the Hyderabad Aggregates Pricing Engine.</p>
+    <!-- ==================== LOGIN SECTION ==================== -->
+    <div id="loginView" class="max-w-md mx-auto mt-20 bg-white rounded-2xl shadow-xl p-8 border border-slate-100">
+        <div class="text-center mb-6">
+            <h1 class="text-2xl font-bold tracking-tight text-slate-900">🏗️ Authorized Access</h1>
+            <p class="text-slate-500 text-sm mt-1">Sign in to access the Hyderabad Aggregates Pricing Engine.</p>
         </div>
 
-        <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-5">
+        <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-4">
             <div>
-                <label class="block text-sm font-medium text-slate-300 mb-1">Email Address</label>
-                <input type="email" id="email" required class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <label class="block text-sm font-medium text-slate-700 mb-1">Email Address</label>
+                <input type="email" id="email" required class="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-2.5 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500">
             </div>
 
             <div>
-                <label class="block text-sm font-medium text-slate-300 mb-1">Password</label>
-                <input type="password" id="password" required class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <label class="block text-sm font-medium text-slate-700 mb-1">Password</label>
+                <input type="password" id="password" required class="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-2.5 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500">
             </div>
 
-            <div id="errorMessage" class="text-red-400 text-sm hidden"></div>
+            <div id="errorMessage" class="text-red-500 text-sm hidden font-medium"></div>
 
             <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition duration-200 shadow-md">
                 Secure Sign In
@@ -35,11 +35,159 @@
         </form>
     </div>
 
+    <!-- ==================== CALCULATOR APP SECTION (Initially Hidden) ==================== -->
+    <div id="appView" class="hidden max-w-3xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden border border-slate-100">
+        <!-- Header -->
+        <div class="bg-slate-900 text-white p-6 sm:p-8 flex justify-between items-center">
+            <div>
+                <h1 class="text-2xl sm:text-3xl font-bold tracking-tight">🏗️ Aggregates App</h1>
+                <p class="text-slate-400 text-sm mt-1">Material quotes, transport, loading, labor, royalty, & recommendations.</p>
+            </div>
+            <button onclick="handleLogout()" class="bg-red-600 hover:bg-red-700 text-white text-xs font-semibold px-3 py-2 rounded-lg shadow transition">
+                🚪 Sign Out
+            </button>
+        </div>
+
+        <!-- Form Body -->
+        <div class="p-6 sm:p-8 space-y-6">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                
+                <!-- Material Type Dropdown -->
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Select Material Type</label>
+                    <select id="materialType" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-2.5 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="AGG_6MM">6 mm Aggregate</option>
+                        <option value="AGG_10MM">10 mm Aggregate</option>
+                        <option value="AGG_20MM">20 mm Aggregate</option>
+                    </select>
+                </div>
+
+                <!-- Manual Price Input for Selected Material -->
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Base Material Price (₹ per Tonne)</label>
+                    <input type="number" id="baseMaterialPrice" value="750" min="0" step="1" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-2.5 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <p class="text-xs text-slate-500 mt-1">Raw quarry or market price per tonne.</p>
+                </div>
+
+                <!-- Quantity -->
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Quantity (Tonnes)</label>
+                    <input type="number" id="tonnes" value="25" min="1" max="500" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-2.5 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+
+                <!-- Distance -->
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Distance from Source (km)</label>
+                    <input type="number" id="distance" value="25" min="1" max="150" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-2.5 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+
+                <!-- Vehicle Type -->
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Vehicle / Lorry Type</label>
+                    <select id="vehicleType" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-2.5 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="10_WHEEL">10-Wheel Lorry (25 Tonnes)</option>
+                        <option value="12_WHEEL">12-Wheel Lorry (40 Tonnes)</option>
+                        <option value="14_WHEEL">14-Wheel Heavy Lorry (50 Tonnes)</option>
+                        <option value="SMALL_TRUCK">Small Tipper (< 10 Tonnes)</option>
+                    </select>
+                </div>
+
+                <!-- Custom Transport Rate Input -->
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Transport Rate (₹ per km)</label>
+                    <input type="number" id="transportRatePerKm" value="50" min="0" step="1" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-2.5 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+
+                <!-- Separate Royalty Input -->
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Quarry Royalty (₹ per Tonne)</label>
+                    <input type="number" id="royaltyRate" value="78" min="0" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-2.5 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <p class="text-xs text-slate-500 mt-1">Telangana Govt rate (G.O.Ms.No.14).</p>
+                </div>
+
+                <!-- Separate Loading Attribute Input -->
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Quarry Loading (₹ per Tonne)</label>
+                    <input type="number" id="loadingRate" value="40" min="0" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-2.5 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <p class="text-xs text-slate-500 mt-1">JCB / Loader charges at source.</p>
+                </div>
+
+                <!-- Separate Labor Input -->
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Site Labor / Unloading (₹ per Tonne)</label>
+                    <input type="number" id="laborRate" value="150" min="0" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-2.5 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+
+                <!-- Profit Margin -->
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Profit Margin (%)</label>
+                    <input type="number" id="margin" value="15" min="0" max="100" step="0.5" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-2.5 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                </div>
+
+            </div>
+
+            <!-- Calculate Button -->
+            <button onclick="calculateQuote()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition duration-200 shadow-md">
+                Calculate Quote & Per-Tonne Recommendation
+            </button>
+
+            <!-- Results Section -->
+            <div id="results" class="hidden mt-8 border-t border-slate-200 pt-6 space-y-6">
+                <h3 class="text-lg font-bold text-slate-900">💰 Quotation Summary & Recommendation</h3>
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="bg-blue-50 p-5 rounded-xl border border-blue-200">
+                        <p class="text-xs text-blue-600 uppercase font-semibold">Total Customer Price (Incl. GST)</p>
+                        <p id="resFinalPrice" class="text-3xl font-extrabold text-blue-700 mt-1">₹0.00</p>
+                    </div>
+                    <div class="bg-emerald-50 p-5 rounded-xl border border-emerald-200">
+                        <p class="text-xs text-emerald-600 uppercase font-semibold">Recommended Price Per Tonne</p>
+                        <p id="resPerTonne" class="text-3xl font-extrabold text-emerald-700 mt-1">₹0.00 / t</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                        <p class="text-xs text-slate-500 uppercase font-semibold">Base Material + Royalty + Loading</p>
+                        <p id="resMaterialCost" class="text-lg font-bold text-slate-800 mt-1">₹0.00</p>
+                    </div>
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                        <p class="text-xs text-slate-500 uppercase font-semibold">Transport & Freight</p>
+                        <p id="resTransportCost" class="text-lg font-bold text-slate-800 mt-1">₹0.00</p>
+                    </div>
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                        <p class="text-xs text-slate-500 uppercase font-semibold">Site Labor (Unloading)</p>
+                        <p id="resLaborCost" class="text-lg font-bold text-slate-800 mt-1">₹0.00</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                        <p class="text-xs text-slate-500 uppercase font-semibold">Profit Margin Amount</p>
+                        <p id="resMargin" class="text-lg font-bold text-slate-800 mt-1">₹0.00</p>
+                    </div>
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                        <p class="text-xs text-slate-500 uppercase font-semibold">GST (5%)</p>
+                        <p id="resGst" class="text-lg font-bold text-slate-800 mt-1">₹0.00</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== SCRIPT LOGIC ==================== -->
     <script>
-        // Initialize Supabase (Replace with your free project credentials from supabase.com)
-        const SUPABASE_URL = 'https://esbudkswhcrhapgcybot.supabase.co/rest/v1/';
-        const SUPABASE_ANON_KEY = 'sb_publishable_x4iGGll5OJSDpeOfwQvKDA_uo21kDNi';
+        // REPLACE with your actual Supabase URL and Anon Key
+        const SUPABASE_URL = 'YOUR_SUPABASE_PROJECT_URL';
+        const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // Check active session on load
+        supabaseClient.auth.getSession().then(({ data: { session } }) => {
+            if (session) {
+                showApp();
+            }
+        });
 
         async function handleLogin(event) {
             event.preventDefault();
@@ -49,7 +197,6 @@
 
             errorDiv.classList.add('hidden');
 
-            // Authenticate securely against Supabase backend database
             const { data, error } = await supabaseClient.auth.signInWithPassword({
                 email: email,
                 password: password,
@@ -59,17 +206,87 @@
                 errorDiv.innerText = error.message;
                 errorDiv.classList.remove('hidden');
             } else {
-                // If login is successful, redirect authorized user to the calculator page
-                window.location.href = 'calculator.html';
+                showApp();
             }
         }
 
-        // Check if already logged in
-        supabaseClient.auth.getSession().then(({ data: { session } }) => {
-            if (session) {
-                window.location.href = 'calculator.html';
+        async function handleLogout() {
+            await supabaseClient.auth.signOut();
+            document.getElementById('appView').classList.add('hidden');
+            document.getElementById('loginView').classList.remove('hidden');
+        }
+
+        function showApp() {
+            document.getElementById('loginView').classList.add('hidden');
+            document.getElementById('appView').classList.remove('hidden');
+        }
+
+        // Calculator Logic
+        const defaultMaterialPrices = {
+            "AGG_6MM": 800,
+            "AGG_10MM": 700,
+            "AGG_20MM": 650
+        };
+
+        document.getElementById("materialType").addEventListener("change", function() {
+            const selectedVal = this.value;
+            if (defaultMaterialPrices[selectedVal] !== undefined) {
+                document.getElementById("baseMaterialPrice").value = defaultMaterialPrices[selectedVal];
             }
         });
+
+        const vehicleCapacities = {
+            "10_WHEEL": 25,
+            "12_WHEEL": 40,
+            "14_WHEEL": 50,
+            "SMALL_TRUCK": 8
+        };
+
+        function calculateQuote() {
+            const tonnes = parseFloat(document.getElementById("tonnes").value) || 0;
+            const distance = parseFloat(document.getElementById("distance").value) || 0;
+            const vehicle = document.getElementById("vehicleType").value;
+            const baseMaterialRate = parseFloat(document.getElementById("baseMaterialPrice").value) || 0;
+            const perKmRate = parseFloat(document.getElementById("transportRatePerKm").value) || 0;
+            const royaltyPerTonne = parseFloat(document.getElementById("royaltyRate").value) || 0;
+            const loadingRatePerTonne = parseFloat(document.getElementById("loadingRate").value) || 0;
+            const laborRatePerTonne = parseFloat(document.getElementById("laborRate").value) || 0;
+            const marginPct = parseFloat(document.getElementById("margin").value) || 0;
+
+            if (tonnes <= 0) {
+                alert("Please enter a valid quantity in tonnes.");
+                return;
+            }
+
+            const totalMaterialRatePerTonne = baseMaterialRate + royaltyPerTonne + loadingRatePerTonne;
+            const baseMaterialCost = tonnes * totalMaterialRatePerTonne;
+
+            const capacity = vehicleCapacities[vehicle];
+            const trips = Math.max(1, Math.ceil(tonnes / capacity));
+            
+            let baseTripFee = 1500;
+            if (vehicle === "12_WHEEL") baseTripFee = 2200;
+            if (vehicle === "14_WHEEL") baseTripFee = 2800;
+            if (vehicle === "SMALL_TRUCK") baseTripFee = 900;
+
+            const transportCost = trips * (baseTripFee + (distance * perKmRate));
+            const siteLaborCost = tonnes * laborRatePerTonne; 
+
+            const subtotal = baseMaterialCost + transportCost + siteLaborCost;
+            const marginAmount = subtotal * (marginPct / 100);
+            const gst = (subtotal + marginAmount) * 0.05;
+            const finalPrice = subtotal + marginAmount + gst;
+            const pricePerTonne = finalPrice / tonnes;
+
+            document.getElementById("results").classList.remove("hidden");
+            document.getElementById("resMaterialCost").innerText = `₹ ${baseMaterialCost.toLocaleString('en-IN', {maximumFractionDigits: 2})}`;
+            document.getElementById("resTransportCost").innerText = `₹ ${transportCost.toLocaleString('en-IN', {maximumFractionDigits: 2})} (${trips} trip)`;
+            document.getElementById("resLaborCost").innerText = `₹ ${siteLaborCost.toLocaleString('en-IN', {maximumFractionDigits: 2})}`;
+            document.getElementById("resMargin").innerText = `₹ ${marginAmount.toLocaleString('en-IN', {maximumFractionDigits: 2})}`;
+            document.getElementById("resGst").innerText = `₹ ${gst.toLocaleString('en-IN', {maximumFractionDigits: 2})}`;
+            document.getElementById("resFinalPrice").innerText = `₹ ${finalPrice.toLocaleString('en-IN', {maximumFractionDigits: 2})}`;
+            document.getElementById("resPerTonne").innerText = `₹ ${pricePerTonne.toLocaleString('en-IN', {maximumFractionDigits: 2})} / t`;
+        }
     </script>
 </body>
 </html>
