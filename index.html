@@ -3,20 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aggregates Pricing App</title>
+    <title>Pricing App</title>
     <!-- PWA Meta Tags -->
     <meta name="theme-color" content="#0f172a">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Aggregates App">
+    <meta name="apple-mobile-web-app-title" content="Construction Pricing App">
     
     <script src="https://cdn.tailwindcss.com"></script>
     
     <!-- Dynamic Manifest Injection for PWA installation -->
     <script>
         const manifest = {
-            "name": "Aggregates Pricing App",
-            "short_name": "AggregatesCalc",
+            "name": "Construction Pricing App",
+            "short_name": "ConstCalc",
             "start_url": "./index.html",
             "display": "standalone",
             "background_color": "#f8fafc",
@@ -41,8 +41,8 @@
         <!-- Header -->
         <div class="bg-slate-900 text-white p-6 sm:p-8 flex justify-between items-center">
             <div>
-                <h1 class="text-2xl sm:text-3xl font-bold tracking-tight">🏗️ Pricing App</h1>
-                <p class="text-slate-400 text-sm mt-1">Material quotes, transport, labor, royalty, & recommendations.</p>
+                <h1 class="text-2xl sm:text-3xl font-bold tracking-tight">🏗️ Construction Pricing Engine</h1>
+                <p class="text-slate-400 text-sm mt-1">RMC, TMT-Steel, & Aggregates quotes, transport, labor, & margins.</p>
             </div>
             <button id="installBtn" class="hidden bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-3 py-2 rounded-lg shadow transition">
                 📲 Install App
@@ -56,16 +56,16 @@
                 <!-- Main Category Dropdown -->
                 <div>
                     <label class="block text-sm font-semibold text-slate-700 mb-2">Material Main Category</label>
-                    <select id="mainCategory" onchange="updateSubcategories()" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-2.5 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <option value="RMC">RMC</option>
+                    <select id="mainCategory" onchange="updateCategorySettings()" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-2.5 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="AGGREGATES">Aggregates & M-Sand</option>
+                        <option value="RMC">RMC (Ready-Mix Concrete)</option>
                         <option value="TMT_STEEL">TMT-Steel</option>
-                        <option value="AGGREGATES">Aggregates</option>
                     </select>
                 </div>
 
                 <!-- Material Type Dropdown -->
                 <div>
-                    <label class="block text-sm font-semibold text-slate-700 mb-2">Select Material Type</label>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Select Material Type / Grade</label>
                     <select id="materialType" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-2.5 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
                         <!-- Populated dynamically -->
                     </select>
@@ -74,7 +74,7 @@
                 <!-- TMT Specific Attributes Box (Visible only when TMT-Steel is selected) -->
                 <div id="tmtAttributesContainer" class="sm:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-6 p-4 bg-slate-50 rounded-xl border border-slate-200 hidden">
                     <div>
-                        <label class="block text-sm font-semibold text-slate-700 mb-2">Grade</label>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">TMT Grade</label>
                         <select id="tmtGrade" class="w-full bg-white border border-slate-300 rounded-lg px-4 py-2 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
                             <option value="Fe500">Fe500</option>
                             <option value="Fe500D">Fe500D</option>
@@ -94,33 +94,30 @@
                     </div>
                 </div>
 
-                <!-- Manual Price Input for Selected Material -->
+                <!-- Base Material Price Input -->
                 <div>
-                    <label class="block text-sm font-semibold text-slate-700 mb-2">Base Material Price (₹ per unit)</label>
-                    <input type="number" id="baseMaterialPrice" value="750" min="0" step="1" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-2.5 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    <p class="text-xs text-slate-500 mt-1">Per Tonne (Aggregates/Steel) or per m³ (RMC).</p>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2" id="priceLabel">Base Material Price (₹ per Tonne)</label>
+                    <input type="number" id="baseMaterialPrice" value="800" min="0" step="1" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-2.5 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <p class="text-xs text-slate-500 mt-1" id="priceUnitHint">Market benchmark price per tonne.</p>
                 </div>
 
                 <!-- Quantity -->
                 <div>
-                    <label class="block text-sm font-semibold text-slate-700 mb-2">Quantity (Tonnes / m³)</label>
-                    <input type="number" id="tonnes" value="25" min="1" max="500" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-2.5 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <label class="block text-sm font-semibold text-slate-700 mb-2" id="qtyLabel">Quantity (Tonnes)</label>
+                    <input type="number" id="tonnes" value="25" min="1" max="10000" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-2.5 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
                 </div>
 
                 <!-- Distance -->
                 <div>
-                    <label class="block text-sm font-semibold text-slate-700 mb-2">Distance from Source (km)</label>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Distance from Source / Plant (km)</label>
                     <input type="number" id="distance" value="25" min="1" max="150" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-2.5 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
                 </div>
 
-                <!-- Vehicle Type -->
-                <div>
+                <!-- Vehicle Type / Lorry Type (Dynamic based on category) -->
+                <div id="vehicleSection">
                     <label class="block text-sm font-semibold text-slate-700 mb-2">Vehicle / Lorry Type</label>
                     <select id="vehicleType" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-2.5 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <option value="10_WHEEL">10-Wheel Lorry (25 Tonnes)</option>
-                        <option value="12_WHEEL">12-Wheel Lorry (40 Tonnes)</option>
-                        <option value="14_WHEEL">14-Wheel Heavy Lorry (50 Tonnes)</option>
-                        <option value="SMALL_TRUCK">Small Tipper (< 10 Tonnes)</option>
+                        <!-- Populated dynamically -->
                     </select>
                 </div>
 
@@ -131,33 +128,34 @@
                 </div>
 
                 <!-- Separate Royalty Input -->
-                <div>
-                    <label class="block text-sm font-semibold text-slate-700 mb-2">Quarry Royalty (₹ per unit)</label>
+                <div id="royaltyContainer">
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Quarry Royalty (₹ per Unit)</label>
                     <input type="number" id="royaltyRate" value="60" min="0" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-2.5 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <p class="text-xs text-slate-500 mt-1">Applicable to aggregates (Govt seigniorage).</p>
                 </div>
 
-                <!-- Separate Labor Input -->
+                <!-- Separate Labor / Unloading Input -->
                 <div>
-                    <label class="block text-sm font-semibold text-slate-700 mb-2">Site Labor / Unloading (₹ per unit)</label>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Site Labor / Handling (₹ per Unit)</label>
                     <input type="number" id="laborRate" value="150" min="0" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-2.5 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
                 </div>
 
                 <!-- Profit Margin -->
                 <div class="sm:col-span-2">
                     <label class="block text-sm font-semibold text-slate-700 mb-2">Profit Margin (%)</label>
-                    <input type="number" id="margin" value="15" min="0" max="100" step="0.5" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-2.5 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <input type="number" id="margin" value="10" min="0" max="100" step="0.5" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-2.5 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
                 </div>
 
             </div>
 
             <!-- Calculate Button -->
             <button onclick="calculateQuote()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition duration-200 shadow-md">
-                Calculate Quote & Per-Unit Recommendation
+                Calculate Commercial Quote & Recommendation
             </button>
 
             <!-- Results Section -->
             <div id="results" class="hidden mt-8 border-t border-slate-200 pt-6 space-y-6">
-                <h3 class="text-lg font-bold text-slate-900">💰 Quotation Summary & Recommendation</h3>
+                <h3 class="text-lg font-bold text-slate-900">💰 Quotation Summary & Margin Analysis</h3>
                 
                 <!-- Highlight Box: Final Price & Per Unit -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -166,8 +164,8 @@
                         <p id="resFinalPrice" class="text-3xl font-extrabold text-blue-700 mt-1">₹0.00</p>
                     </div>
                     <div class="bg-emerald-50 p-5 rounded-xl border border-emerald-200">
-                        <p class="text-xs text-emerald-600 uppercase font-semibold">Recommended Price Per Unit</p>
-                        <p id="resPerTonne" class="text-3xl font-extrabold text-emerald-700 mt-1">₹0.00 / unit</p>
+                        <p id="resPerUnitLabel" class="text-xs text-emerald-600 uppercase font-semibold">Recommended Price Per Tonne</p>
+                        <p id="resPerUnit" class="text-3xl font-extrabold text-emerald-700 mt-1">₹0.00 / unit</p>
                     </div>
                 </div>
 
@@ -182,7 +180,7 @@
                         <p id="resTransportCost" class="text-lg font-bold text-slate-800 mt-1">₹0.00</p>
                     </div>
                     <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
-                        <p class="text-xs text-slate-500 uppercase font-semibold">Site Labor (Unloading)</p>
+                        <p class="text-xs text-slate-500 uppercase font-semibold">Site Labor / Handling</p>
                         <p id="resLaborCost" class="text-lg font-bold text-slate-800 mt-1">₹0.00</p>
                     </div>
                 </div>
@@ -193,7 +191,7 @@
                         <p id="resMargin" class="text-lg font-bold text-slate-800 mt-1">₹0.00</p>
                     </div>
                     <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
-                        <p class="text-xs text-slate-500 uppercase font-semibold">GST Rate</p>
+                        <p class="text-xs text-slate-500 uppercase font-semibold">GST Rate Applicable</p>
                         <p id="resGst" class="text-lg font-bold text-slate-800 mt-1">₹0.00</p>
                     </div>
                 </div>
@@ -202,120 +200,176 @@
     </div>
 
     <script>
-        // Subcategories mapping based on Main Category selection
-        const subcategories = {
-            "RMC": [
-                { value: "RMC", name: "RMC", defaultPrice: 4100 }
-            ],
-            "TMT_STEEL": [
-                { value: "TMT_STEEL", name: "TMT steel (refer to attached)", defaultPrice: 50000 }
-            ],
-            "AGGREGATES": [
-                { value: "AGG_6MM", name: "6 mm", defaultPrice: 800 },
-                { value: "AGG_10MM", name: "10 mm", defaultPrice: 700 },
-                { value: "AGG_20MM", name: "20 mm", defaultPrice: 650 }
-            ]
+        // Category configuration data
+        const categoryData = {
+            "AGGREGATES": {
+                unitName: "Tonne",
+                subtypes: [
+                    { value: "AGG_6MM", name: "6 mm Aggregate", defaultPrice: 800 },
+                    { value: "AGG_10MM", name: "10 mm Aggregate", defaultPrice: 700 },
+                    { value: "AGG_20MM", name: "20 mm Aggregate", defaultPrice: 650 },
+                    { value: "AGG_MSAND", name: "M-Sand (Manufactured Sand)", defaultPrice: 750 }
+                ],
+                vehicles: [
+                    { value: "10_WHEEL", name: "10-Wheel Lorry (25 Tonnes)", capacity: 25, tripFee: 1500 },
+                    { value: "12_WHEEL", name: "12-Wheel Lorry (40 Tonnes)", capacity: 40, tripFee: 2200 },
+                    { value: "14_WHEEL", name: "14-Wheel Heavy Lorry (50 Tonnes)", capacity: 50, tripFee: 2800 },
+                    { value: "SMALL_TRUCK", name: "Small Tipper (< 10 Tonnes)", capacity: 8, tripFee: 900 }
+                ],
+                defaultRoyalty: 60,
+                hasRoyalty: true,
+                gstRate: 0.05
+            },
+            "RMC": {
+                unitName: "cubic meter (m³)",
+                subtypes: [
+                    { value: "RMC_M25", name: "RMC - M25 Grade", defaultPrice: 4100 },
+                    { value: "RMC_M30", name: "RMC - M30 Grade", defaultPrice: 4350 },
+                    { value: "RMC_M35", name: "RMC - M35 Grade", defaultPrice: 4600 },
+                    { value: "RMC_M40", name: "RMC - M40 Grade", defaultPrice: 4850 }
+                ],
+                vehicles: [
+                    { value: "TRANSIT_MIXER", name: "Transit Mixer (TM - 6 m³)", capacity: 6, tripFee: 1800 }
+                ],
+                defaultRoyalty: 0,
+                hasRoyalty: false,
+                gstRate: 0.18
+            },
+            "TMT_STEEL": {
+                unitName: "Tonne",
+                subtypes: [
+                    { value: "STEEL_8MM", name: "TMT Steel - 8 mm", defaultPrice: 52000 },
+                    { value: "STEEL_10MM", name: "TMT Steel - 10 mm", defaultPrice: 51000 },
+                    { value: "STEEL_12MM", name: "TMT Steel - 12 mm", defaultPrice: 50500 },
+                    { value: "STEEL_16MM", name: "TMT Steel - 16 mm", defaultPrice: 50000 },
+                    { value: "STEEL_20MM", name: "TMT Steel - 20 mm", defaultPrice: 50000 },
+                    { value: "STEEL_25MM", name: "TMT Steel - 25mm & Above", defaultPrice: 49500 }
+                ],
+                vehicles: [
+                    { value: "STEEL_LCV", name: "Mini LCV Truck (Up to 7 Tonnes)", capacity: 7, tripFee: 1200 },
+                    { value: "STEEL_10WHEEL", name: "10-Wheel Steel Truck (15 - 20 Tonnes)", capacity: 20, tripFee: 2500 },
+                    { value: "STEEL_TRAILER", name: "Multi-Axle Trailer (25 - 35 Tonnes)", capacity: 32, tripFee: 3800 }
+                ],
+                defaultRoyalty: 0,
+                hasRoyalty: false,
+                gstRate: 0.18
+            }
         };
 
-        function updateSubcategories() {
+        function updateCategorySettings() {
             const mainCat = document.getElementById("mainCategory").value;
+            const config = categoryData[mainCat];
             const materialSelect = document.getElementById("materialType");
+            const vehicleSelect = document.getElementById("vehicleType");
             const tmtContainer = document.getElementById("tmtAttributesContainer");
-            
-            materialSelect.innerHTML = "";
-            const items = subcategories[mainCat] || [];
+            const royaltyContainer = document.getElementById("royaltyContainer");
 
-            items.forEach(item => {
+            // Populate Subtypes
+            materialSelect.innerHTML = "";
+            config.subtypes.forEach(item => {
                 const opt = document.createElement("option");
                 opt.value = item.value;
                 opt.text = item.name;
                 materialSelect.appendChild(opt);
             });
 
-            if (items.length > 0) {
-                document.getElementById("baseMaterialPrice").value = items[0].defaultPrice;
+            if (config.subtypes.length > 0) {
+                document.getElementById("baseMaterialPrice").value = config.subtypes[0].defaultPrice;
             }
 
-            // Show or hide TMT specific container
+            // Populate Vehicles
+            vehicleSelect.innerHTML = "";
+            config.vehicles.forEach(v => {
+                const opt = document.createElement("option");
+                opt.value = v.value;
+                opt.text = v.name;
+                vehicleSelect.appendChild(opt);
+            });
+
+            // Royalty visibility & default
+            document.getElementById("royaltyRate").value = config.defaultRoyalty;
+            if (config.hasRoyalty) {
+                royaltyContainer.classList.remove("hidden");
+            } else {
+                royaltyContainer.classList.add("hidden");
+            }
+
+            // TMT attributes visibility
             if (mainCat === "TMT_STEEL") {
                 tmtContainer.classList.remove("hidden");
             } else {
                 tmtContainer.classList.add("hidden");
             }
+
+            // Update Labels
+            document.getElementById("priceLabel").innerText = `Base Material Price (₹ per ${config.unitName})`;
+            document.getElementById("qtyLabel").innerText = `Quantity (${config.unitName === 'Tonne' ? 'Tonnes' : 'cubic meters (m³)'})`;
+            document.getElementById("priceUnitHint").innerText = `Market benchmark price per ${config.unitName}.`;
         }
 
-        // Initialize subcategories on page load
+        // Initialize on page load
         window.addEventListener('DOMContentLoaded', () => {
-            updateSubcategories();
+            updateCategorySettings();
         });
 
         // Update default price when specific subtype changes
         document.getElementById("materialType").addEventListener("change", function() {
             const mainCat = document.getElementById("mainCategory").value;
+            const config = categoryData[mainCat];
             const selectedVal = this.value;
-            const items = subcategories[mainCat] || [];
-            const found = items.find(i => i.value === selectedVal);
+            const found = config.subtypes.find(i => i.value === selectedVal);
             if (found) {
                 document.getElementById("baseMaterialPrice").value = found.defaultPrice;
             }
         });
 
-        const vehicleCapacities = {
-            "10_WHEEL": 25,
-            "12_WHEEL": 40,
-            "14_WHEEL": 50,
-            "SMALL_TRUCK": 8
-        };
-
         function calculateQuote() {
-            const tonnes = parseFloat(document.getElementById("tonnes").value) || 0;
+            const mainCat = document.getElementById("mainCategory").value;
+            const config = categoryData[mainCat];
+            
+            const quantity = parseFloat(document.getElementById("tonnes").value) || 0;
             const distance = parseFloat(document.getElementById("distance").value) || 0;
-            const vehicle = document.getElementById("vehicleType").value;
+            const vehicleVal = document.getElementById("vehicleType").value;
             const baseMaterialRate = parseFloat(document.getElementById("baseMaterialPrice").value) || 0;
             const perKmRate = parseFloat(document.getElementById("transportRatePerKm").value) || 0;
-            const royaltyPerTonne = parseFloat(document.getElementById("royaltyRate").value) || 0;
-            const laborRatePerTonne = parseFloat(document.getElementById("laborRate").value) || 0;
+            const royaltyRate = config.hasRoyalty ? (parseFloat(document.getElementById("royaltyRate").value) || 0) : 0;
+            const laborRate = parseFloat(document.getElementById("laborRate").value) || 0;
             const marginPct = parseFloat(document.getElementById("margin").value) || 0;
-            const mainCat = document.getElementById("mainCategory").value;
 
-            if (tonnes <= 0) {
+            if (quantity <= 0) {
                 alert("Please enter a valid quantity.");
                 return;
             }
 
-            const loadingRate = 40; 
-            const totalMaterialRatePerUnit = baseMaterialRate + royaltyPerTonne + loadingRate;
-            const baseMaterialCost = tonnes * totalMaterialRatePerUnit;
+            // Selected vehicle config
+            const selectedVehicle = config.vehicles.find(v => v.value === vehicleVal) || config.vehicles[0];
+            const trips = Math.max(1, Math.ceil(quantity / selectedVehicle.capacity));
 
-            const capacity = vehicleCapacities[vehicle];
-            const trips = Math.max(1, Math.ceil(tonnes / capacity));
-            
-            let baseTripFee = 1500;
-            if (vehicle === "12_WHEEL") baseTripFee = 2200;
-            if (vehicle === "14_WHEEL") baseTripFee = 2800;
-            if (vehicle === "SMALL_TRUCK") baseTripFee = 900;
+            // Cost components
+            const loadingRate = mainCat === "AGGREGATES" ? 40 : 0; // Loading charges applicable for aggregates
+            const totalMaterialRatePerUnit = baseMaterialRate + royaltyRate + loadingRate;
+            const baseMaterialCost = quantity * totalMaterialRatePerUnit;
 
-            const transportCost = trips * (baseTripFee + (distance * perKmRate));
-            const siteLaborCost = tonnes * laborRatePerTonne; 
+            const transportCost = trips * (selectedVehicle.tripFee + (distance * perKmRate));
+            const siteLaborCost = quantity * laborRate; 
 
             const subtotal = baseMaterialCost + transportCost + siteLaborCost;
             const marginAmount = subtotal * (marginPct / 100);
             
-            // GST: Aggregates 5%, RMC & Steel 18%
-            const gstRate = (mainCat === "AGGREGATES") ? 0.05 : 0.18;
-            const gst = (subtotal + marginAmount) * gstRate;
-            
+            const gst = (subtotal + marginAmount) * config.gstRate;
             const finalPrice = subtotal + marginAmount + gst;
-            const pricePerUnit = finalPrice / tonnes;
+            const pricePerUnit = finalPrice / quantity;
 
+            // Render Results
             document.getElementById("results").classList.remove("hidden");
             document.getElementById("resMaterialCost").innerText = `₹ ${baseMaterialCost.toLocaleString('en-IN', {maximumFractionDigits: 2})}`;
-            document.getElementById("resTransportCost").innerText = `₹ ${transportCost.toLocaleString('en-IN', {maximumFractionDigits: 2})} (${trips} trip)`;
+            document.getElementById("resTransportCost").innerText = `₹ ${transportCost.toLocaleString('en-IN', {maximumFractionDigits: 2})} (${trips} trip${trips > 1 ? 's' : ''})`;
             document.getElementById("resLaborCost").innerText = `₹ ${siteLaborCost.toLocaleString('en-IN', {maximumFractionDigits: 2})}`;
             document.getElementById("resMargin").innerText = `₹ ${marginAmount.toLocaleString('en-IN', {maximumFractionDigits: 2})}`;
-            document.getElementById("resGst").innerText = `₹ ${gst.toLocaleString('en-IN', {maximumFractionDigits: 2})} (${gstRate * 100}%)`;
+            document.getElementById("resGst").innerText = `₹ ${gst.toLocaleString('en-IN', {maximumFractionDigits: 2})} (${config.gstRate * 100}%)`;
             document.getElementById("resFinalPrice").innerText = `₹ ${finalPrice.toLocaleString('en-IN', {maximumFractionDigits: 2})}`;
-            document.getElementById("resPerTonne").innerText = `₹ ${pricePerUnit.toLocaleString('en-IN', {maximumFractionDigits: 2})} / unit`;
+            document.getElementById("resPerUnitLabel").innerText = `Recommended Price Per ${config.unitName}`;
+            document.getElementById("resPerUnit").innerText = `₹ ${pricePerUnit.toLocaleString('en-IN', {maximumFractionDigits: 2})} / ${config.unitName}`;
         }
 
         // PWA Install Prompt Handler
@@ -341,3 +395,5 @@
     </script>
 </body>
 </html>
+
+```
