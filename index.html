@@ -3,48 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Construction Pricing App - Secure Access</title>
+    <title>Aggregates Pricing App</title>
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#0f172a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Aggregates App">
+    
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <!-- Dynamic Manifest Injection for PWA installation -->
+    <script>
+        const manifest = {
+            "name": "Aggregates Pricing App",
+            "short_name": "AggregatesCalc",
+            "start_url": "./index.html",
+            "display": "standalone",
+            "background_color": "#f8fafc",
+            "theme_color": "#0f172a",
+            "icons": [{
+                "src": "https://cdn-icons-png.flaticon.com/512/2954/2954848.png",
+                "sizes": "512x512",
+                "type": "image/png"
+            }]
+        };
+        const blob = new Blob([JSON.stringify(manifest)], {type: 'application/json'});
+        const manifestURL = URL.createObjectURL(blob);
+        const link = document.createElement('link');
+        link.rel = 'manifest';
+        link.href = manifestURL;
+        document.head.appendChild(link);
+    </script>
 </head>
 <body class="bg-slate-50 text-slate-800 font-sans min-h-screen py-6 px-4">
 
-    <!-- ==================== LOGIN SECTION ==================== -->
-    <div id="loginView" class="max-w-md mx-auto mt-20 bg-white rounded-2xl shadow-xl p-8 border border-slate-100">
-        <div class="text-center mb-6">
-            <h1 class="text-2xl font-bold tracking-tight text-slate-900">🏗️ Authorized Access</h1>
-            <p class="text-slate-500 text-sm mt-1">Sign in to access the Construction Materials Pricing Engine.</p>
-        </div>
-
-        <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-4">
-            <div>
-                <label class="block text-sm font-medium text-slate-700 mb-1">Email Address</label>
-                <input type="email" id="email" required class="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-2.5 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500">
-            </div>
-
-            <div>
-                <label class="block text-sm font-medium text-slate-700 mb-1">Password</label>
-                <input type="password" id="password" required class="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-2.5 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500">
-            </div>
-
-            <div id="errorMessage" class="text-red-500 text-sm hidden font-medium"></div>
-
-            <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition duration-200 shadow-md">
-                Secure Sign In
-            </button>
-        </form>
-    </div>
-
-    <!-- ==================== CALCULATOR APP SECTION (Initially Hidden) ==================== -->
-    <div id="appView" class="hidden max-w-3xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden border border-slate-100">
+    <div class="max-w-3xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden border border-slate-100">
         <!-- Header -->
         <div class="bg-slate-900 text-white p-6 sm:p-8 flex justify-between items-center">
             <div>
-                <h1 class="text-2xl sm:text-3xl font-bold tracking-tight">🏗️ Construction Pricing App</h1>
-                <p class="text-slate-400 text-sm mt-1">Multi-material quotes, transport, loading, labor & recommendations.</p>
+                <h1 class="text-2xl sm:text-3xl font-bold tracking-tight">🏗️ Pricing App</h1>
+                <p class="text-slate-400 text-sm mt-1">Material quotes, transport, labor, royalty, & recommendations.</p>
             </div>
-            <button onclick="handleLogout()" class="bg-red-600 hover:bg-red-700 text-white text-xs font-semibold px-3 py-2 rounded-lg shadow transition">
-                🚪 Sign Out
+            <button id="installBtn" class="hidden bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-3 py-2 rounded-lg shadow transition">
+                📲 Install App
             </button>
         </div>
 
@@ -54,26 +55,26 @@
                 
                 <!-- Main Category Dropdown -->
                 <div>
-                    <label class="block text-sm font-semibold text-slate-700 mb-2">Main Category</label>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Material Main Category</label>
                     <select id="mainCategory" onchange="updateSubcategories()" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-2.5 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <option value="RMC">RMC</option>
+                        <option value="TMT_STEEL">TMT-Steel</option>
                         <option value="AGGREGATES">Aggregates</option>
-                        <option value="RMC">RMC (Ready-Mix Concrete)</option>
-                        <option value="TMT_STEEL">TMT Steel</option>
                     </select>
                 </div>
 
-                <!-- Dynamic Material Type / Subtype Dropdown -->
+                <!-- Material Type Dropdown -->
                 <div>
-                    <label class="block text-sm font-semibold text-slate-700 mb-2">Select Material Type / Subtype</label>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Select Material Type</label>
                     <select id="materialType" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-2.5 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <!-- Populated dynamically via JS -->
+                        <!-- Populated dynamically -->
                     </select>
                 </div>
 
-                <!-- TMT Specific Attributes (Hidden by default, shown only when TMT-Steel is selected) -->
+                <!-- TMT Specific Attributes Box (Visible only when TMT-Steel is selected) -->
                 <div id="tmtAttributesContainer" class="sm:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-6 p-4 bg-slate-50 rounded-xl border border-slate-200 hidden">
                     <div>
-                        <label class="block text-sm font-semibold text-slate-700 mb-2">TMT Grade</label>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Grade</label>
                         <select id="tmtGrade" class="w-full bg-white border border-slate-300 rounded-lg px-4 py-2 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
                             <option value="Fe500">Fe500</option>
                             <option value="Fe500D">Fe500D</option>
@@ -83,7 +84,7 @@
                         </select>
                     </div>
                     <div>
-                        <label class="block text-sm font-semibold text-slate-700 mb-2">Form / Material Type</label>
+                        <label class="block text-sm font-semibold text-slate-700 mb-2">Material Form Type</label>
                         <select id="tmtForm" class="w-full bg-white border border-slate-300 rounded-lg px-4 py-2 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
                             <option value="Straight">Straight</option>
                             <option value="Bend">Bend</option>
@@ -95,9 +96,9 @@
 
                 <!-- Manual Price Input for Selected Material -->
                 <div>
-                    <label class="block text-sm font-semibold text-slate-700 mb-2">Base Material Unit Price (₹)</label>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Base Material Price (₹ per unit)</label>
                     <input type="number" id="baseMaterialPrice" value="750" min="0" step="1" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-2.5 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    <p class="text-xs text-slate-500 mt-1">Price per Tonne (Aggregates/Steel) or per m³ (RMC).</p>
+                    <p class="text-xs text-slate-500 mt-1">Per Tonne (Aggregates/Steel) or per m³ (RMC).</p>
                 </div>
 
                 <!-- Quantity -->
@@ -131,25 +132,18 @@
 
                 <!-- Separate Royalty Input -->
                 <div>
-                    <label class="block text-sm font-semibold text-slate-700 mb-2">Quarry Royalty (₹ per Unit)</label>
-                    <input type="number" id="royaltyRate" value="78" min="0" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-2.5 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    <p class="text-xs text-slate-500 mt-1">Applicable mainly to aggregates (G.O.Ms.No.14).</p>
-                </div>
-
-                <!-- Separate Loading Attribute Input -->
-                <div>
-                    <label class="block text-sm font-semibold text-slate-700 mb-2">Loading Charges (₹ per Unit)</label>
-                    <input type="number" id="loadingRate" value="40" min="0" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-2.5 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Quarry Royalty (₹ per unit)</label>
+                    <input type="number" id="royaltyRate" value="60" min="0" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-2.5 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
                 </div>
 
                 <!-- Separate Labor Input -->
                 <div>
-                    <label class="block text-sm font-semibold text-slate-700 mb-2">Site Labor / Unloading (₹ per Unit)</label>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Site Labor / Unloading (₹ per unit)</label>
                     <input type="number" id="laborRate" value="150" min="0" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-2.5 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
                 </div>
 
                 <!-- Profit Margin -->
-                <div>
+                <div class="sm:col-span-2">
                     <label class="block text-sm font-semibold text-slate-700 mb-2">Profit Margin (%)</label>
                     <input type="number" id="margin" value="15" min="0" max="100" step="0.5" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-2.5 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
                 </div>
@@ -158,13 +152,14 @@
 
             <!-- Calculate Button -->
             <button onclick="calculateQuote()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition duration-200 shadow-md">
-                Calculate Quote & Recommendation
+                Calculate Quote & Per-Unit Recommendation
             </button>
 
             <!-- Results Section -->
             <div id="results" class="hidden mt-8 border-t border-slate-200 pt-6 space-y-6">
                 <h3 class="text-lg font-bold text-slate-900">💰 Quotation Summary & Recommendation</h3>
                 
+                <!-- Highlight Box: Final Price & Per Unit -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div class="bg-blue-50 p-5 rounded-xl border border-blue-200">
                         <p class="text-xs text-blue-600 uppercase font-semibold">Total Customer Price (Incl. GST)</p>
@@ -176,9 +171,10 @@
                     </div>
                 </div>
 
+                <!-- Detailed Breakdown -->
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
-                        <p class="text-xs text-slate-500 uppercase font-semibold">Base Material + Royalty + Loading</p>
+                        <p class="text-xs text-slate-500 uppercase font-semibold">Base Material + Royalty</p>
                         <p id="resMaterialCost" class="text-lg font-bold text-slate-800 mt-1">₹0.00</p>
                     </div>
                     <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
@@ -197,7 +193,7 @@
                         <p id="resMargin" class="text-lg font-bold text-slate-800 mt-1">₹0.00</p>
                     </div>
                     <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
-                        <p class="text-xs text-slate-500 uppercase font-semibold">GST (5% / 18%)</p>
+                        <p class="text-xs text-slate-500 uppercase font-semibold">GST Rate</p>
                         <p id="resGst" class="text-lg font-bold text-slate-800 mt-1">₹0.00</p>
                     </div>
                 </div>
@@ -205,72 +201,19 @@
         </div>
     </div>
 
-    <!-- ==================== SCRIPT LOGIC ==================== -->
     <script>
-        // REPLACE with your actual Supabase URL and Anon Key
-        const SUPABASE_URL = 'YOUR_SUPABASE_PROJECT_URL';
-        const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
-        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-        // Check active session on load
-        supabaseClient.auth.getSession().then(({ data: { session } }) => {
-            if (session) {
-                showApp();
-            }
-        });
-
-        async function handleLogin(event) {
-            event.preventDefault();
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            const errorDiv = document.getElementById('errorMessage');
-
-            errorDiv.classList.add('hidden');
-
-            const { data, error } = await supabaseClient.auth.signInWithPassword({
-                email: email,
-                password: password,
-            });
-
-            if (error) {
-                errorDiv.innerText = error.message;
-                errorDiv.classList.remove('hidden');
-            } else {
-                showApp();
-            }
-        }
-
-        async function handleLogout() {
-            await supabaseClient.auth.signOut();
-            document.getElementById('appView').classList.add('hidden');
-            document.getElementById('loginView').classList.remove('hidden');
-        }
-
-        function showApp() {
-            document.getElementById('loginView').classList.add('hidden');
-            document.getElementById('appView').classList.remove('hidden');
-            updateSubcategories(); // Initialize subcategories on load
-        }
-
-        // Subcategory mapping based on Main Category selection
+        // Subcategories mapping based on Main Category selection
         const subcategories = {
-            "AGGREGATES": [
-                { value: "AGG_6MM", name: "6 mm Aggregate", defaultPrice: 800 },
-                { value: "AGG_10MM", name: "10 mm Aggregate", defaultPrice: 700 },
-                { value: "AGG_20MM", name: "20 mm Aggregate", defaultPrice: 650 }
-            ],
             "RMC": [
-                { value: "RMC_M25", name: "RMC - M25 Grade", defaultPrice: 4100 },
-                { value: "RMC_M30", name: "RMC - M30 Grade", defaultPrice: 4350 },
-                { value: "RMC_M35", name: "RMC - M35 Grade", defaultPrice: 4600 }
+                { value: "RMC", name: "RMC", defaultPrice: 4100 }
             ],
             "TMT_STEEL": [
-                { value: "STEEL_8MM", name: "TMT Steel - 8 mm", defaultPrice: 52000 },
-                { value: "STEEL_10MM", name: "TMT Steel - 10 mm", defaultPrice: 51000 },
-                { value: "STEEL_12MM", name: "TMT Steel - 12 mm", defaultPrice: 50500 },
-                { value: "STEEL_16MM", name: "TMT Steel - 16 mm", defaultPrice: 50000 },
-                { value: "STEEL_20MM", name: "TMT Steel - 20 mm", defaultPrice: 50000 },
-                { value: "STEEL_MORE", name: "TMT Steel - 25mm / 32mm (More)", defaultPrice: 50000 }
+                { value: "TMT_STEEL", name: "TMT steel (refer to attached)", defaultPrice: 50000 }
+            ],
+            "AGGREGATES": [
+                { value: "AGG_6MM", name: "6 mm", defaultPrice: 800 },
+                { value: "AGG_10MM", name: "10 mm", defaultPrice: 700 },
+                { value: "AGG_20MM", name: "20 mm", defaultPrice: 650 }
             ]
         };
 
@@ -293,13 +236,18 @@
                 document.getElementById("baseMaterialPrice").value = items[0].defaultPrice;
             }
 
-            // Show or hide TMT specific attribute box
+            // Show or hide TMT specific container
             if (mainCat === "TMT_STEEL") {
                 tmtContainer.classList.remove("hidden");
             } else {
                 tmtContainer.classList.add("hidden");
             }
         }
+
+        // Initialize subcategories on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            updateSubcategories();
+        });
 
         // Update default price when specific subtype changes
         document.getElementById("materialType").addEventListener("change", function() {
@@ -326,7 +274,6 @@
             const baseMaterialRate = parseFloat(document.getElementById("baseMaterialPrice").value) || 0;
             const perKmRate = parseFloat(document.getElementById("transportRatePerKm").value) || 0;
             const royaltyPerTonne = parseFloat(document.getElementById("royaltyRate").value) || 0;
-            const loadingRatePerTonne = parseFloat(document.getElementById("loadingRate").value) || 0;
             const laborRatePerTonne = parseFloat(document.getElementById("laborRate").value) || 0;
             const marginPct = parseFloat(document.getElementById("margin").value) || 0;
             const mainCat = document.getElementById("mainCategory").value;
@@ -336,7 +283,8 @@
                 return;
             }
 
-            const totalMaterialRatePerUnit = baseMaterialRate + royaltyPerTonne + loadingRatePerTonne;
+            const loadingRate = 40; 
+            const totalMaterialRatePerUnit = baseMaterialRate + royaltyPerTonne + loadingRate;
             const baseMaterialCost = tonnes * totalMaterialRatePerUnit;
 
             const capacity = vehicleCapacities[vehicle];
@@ -353,7 +301,7 @@
             const subtotal = baseMaterialCost + transportCost + siteLaborCost;
             const marginAmount = subtotal * (marginPct / 100);
             
-            // GST: Steel & RMC typically 18%, Aggregates 5%
+            // GST: Aggregates 5%, RMC & Steel 18%
             const gstRate = (mainCat === "AGGREGATES") ? 0.05 : 0.18;
             const gst = (subtotal + marginAmount) * gstRate;
             
@@ -369,6 +317,27 @@
             document.getElementById("resFinalPrice").innerText = `₹ ${finalPrice.toLocaleString('en-IN', {maximumFractionDigits: 2})}`;
             document.getElementById("resPerTonne").innerText = `₹ ${pricePerUnit.toLocaleString('en-IN', {maximumFractionDigits: 2})} / unit`;
         }
+
+        // PWA Install Prompt Handler
+        let deferredPrompt;
+        const installBtn = document.getElementById("installBtn");
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            installBtn.classList.remove('hidden');
+        });
+
+        installBtn.addEventListener('click', async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') {
+                    installBtn.classList.add('hidden');
+                }
+                deferredPrompt = null;
+            }
+        });
     </script>
 </body>
 </html>
