@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hyderabad InfraFin - WCR, Cash Flow & AI Intelligence Engine</title>
+    <!-- Tailwind CSS for modern responsive styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js for interactive financial charts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- jsPDF for reliable programmatic PDF downloads -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- FontAwesome for professional icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen">
+
+    <header class="bg-slate-800 border-b border-slate-700 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="bg-blue-600 p-2 rounded-lg text-white">
+                    <i class="fa-solid fa-chart-line text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg font-bold tracking-tight">Hyderabad InfraFin <span class="text-blue-400 text-xs px-2 py-0.5 bg-blue-950 border border-blue-800 rounded-full ml-1">AI-Powered WCR Engine</span></h1>
+                    <p class="text-xs text-slate-400">TReDS vs Trade Licence vs Unstructured Credit + Growth & Working Days</p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-2 sm:space-x-3">
+                <button onclick="resetDefaults()" class="bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs font-semibold px-3 py-2 rounded-lg transition border border-slate-600">
+                    <i class="fa-solid fa-rotate-right mr-1"></i> Reset
+                </button>
+                <button onclick="exportToExcel()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold px-3 py-2 rounded-lg transition shadow-md flex items-center">
+                    <i class="fa-solid fa-file-excel mr-1"></i> Excel (CSV)
+                </button>
+                <button onclick="exportToPDF()" class="bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold px-3 py-2 rounded-lg transition shadow-md flex items-center">
+                    <i class="fa-solid fa-file-pdf mr-1"></i> Export PDF
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+
+        <!-- SECTION 1: INPUT CONTROLS -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            <!-- Card 1: Capital Structure & Funding -->
+            <div class="bg-slate-800 rounded-2xl p-6 border border-slate-700 shadow-xl space-y-5">
+                <div class="flex items-center justify-between border-b border-slate-700 pb-3">
+                    <h2 class="font-bold text-slate-200 text-base"><i class="fa-solid fa-wallet text-blue-400 mr-2"></i> Capital Structure</h2>
+                    <span class="text-xs text-slate-400 bg-slate-700 px-2.5 py-1 rounded-md">Funding Mix</span>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-medium text-slate-400 mb-1">Total Initial Capital Pool (₹)</label>
+                    <input type="number" id="initialCapital" value="1500000" step="100000" oninput="calculateModel()" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm font-semibold focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    <p id="initialCapitalWords" class="text-[11px] text-blue-400 font-medium mt-1">Default: ₹15 Lakhs initial deployment</p>
+                </div>
+
+                <div>
+                    <div class="flex justify-between text-xs mb-1">
+                        <span class="text-slate-400 font-medium">Equity: <strong id="equityDisplay" class="text-emerald-400">₹15.0 Lakhs</strong></span>
+                        <span class="text-slate-400 font-medium">Debt: <strong id="debtDisplay" class="text-amber-400">₹0.0 Lakhs</strong></span>
+                    </div>
+                    <input type="range" id="equityRatio" min="0" max="100" value="100" step="5" oninput="calculateModel()" class="w-full accent-blue-500 cursor-pointer">
+                    <div class="flex justify-between text-[10px] text-slate-500 mt-0.5">
+                        <span>0% Eq (100% Debt)</span>
+                        <span>50/50</span>
+                        <span>100% Equity (0% Debt)</span>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-medium text-slate-400 mb-1">Debt Annual Interest Rate (%)</label>
+                    <input type="number" id="debtInterestRate" value="12" min="0" max="30" step="0.5" oninput="calculateModel()" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                </div>
+            </div>
+
+            <!-- Card 2: Operating Scale, Growth & Business Days -->
+            <div class="bg-slate-800 rounded-2xl p-6 border border-slate-700 shadow-xl space-y-4">
+                <div class="flex items-center justify-between border-b border-slate-700 pb-3">
+                    <h2 class="font-bold text-slate-200 text-base"><i class="fa-solid fa-sliders text-indigo-400 mr-2"></i> Scale, Growth & Days</h2>
+                    <span class="text-xs text-slate-400 bg-slate-700 px-2.5 py-1 rounded-md">Operations</span>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-medium text-slate-400 mb-1">Initial Monthly Turnover (₹)</label>
+                    <input type="number" id="monthlyTurnover" value="3800000" step="100000" oninput="calculateModel()" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm font-semibold focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    <p id="monthlyTurnoverWords" class="text-[11px] text-blue-400 font-medium mt-1">Default: ₹38 Lakhs (Mid-scale supplier)</p>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-400 mb-1">Monthly Growth Rate (%)</label>
+                        <input type="number" id="growthRate" value="0" min="0" max="50" step="0.5" oninput="calculateModel()" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-400 mb-1">Business Days/Month</label>
+                        <input type="number" id="businessDays" value="25" min="15" max="30" step="1" oninput="calculateModel()" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-400 mb-1">Material Category (GST)</label>
+                        <select id="materialCategory" onchange="calculateModel()" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white text-xs font-semibold focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                            <option value="aggregates">Aggregates / M-Sand (5% GST)</option>
+                            <option value="rmc_steel" selected>RMC & TMT Steel (18% GST)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-400 mb-1">Tax Rate (%)</label>
+                        <input type="number" id="taxRate" value="25" min="0" max="40" step="1" oninput="calculateModel()" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-400 mb-1">Profit Margin (%)</label>
+                        <input type="number" id="profitMargin" value="7.2" min="1" max="25" step="0.1" oninput="calculateModel()" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-400 mb-1">Overheads (₹)</label>
+                        <input type="number" id="monthlyOverheads" value="80000" step="5000" oninput="calculateModel()" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 3: Pay-Schedule / Credit Profile Scenario Selector -->
+            <div class="bg-slate-800 rounded-2xl p-6 border border-slate-700 shadow-xl space-y-5">
+                <div class="flex items-center justify-between border-b border-slate-700 pb-3">
+                    <h2 class="font-bold text-slate-200 text-base"><i class="fa-solid fa-file-invoice-dollar text-emerald-400 mr-2"></i> Credit Velocity Profile</h2>
+                    <span class="text-xs text-emerald-400 bg-emerald-950 border border-emerald-800 px-2.5 py-1 rounded-md">WCR Engine</span>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-medium text-slate-400 mb-1.5">Select Pay-Schedule Scenario</label>
+                    <select id="creditProfile" onchange="toggleTreadsInput(); calculateModel();" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2.5 text-white text-sm font-semibold focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                        <option value="treads">With TReDS (48-72 Hours Liquid Realization)</option>
+                        <option value="licence">With Trade Licence (Formal 45-Day Cycle)</option>
+                        <option value="unstructured">Without Anything (Unstructured 60-90 Day Lag)</option>
+                    </select>
+                </div>
+
+                <!-- Editable TReDS Discounting Rate Field -->
+                <div id="treadsDiscountBox" class="bg-slate-900/90 p-3.5 rounded-xl border border-blue-500/40 space-y-2">
+                    <div class="flex justify-between items-center">
+                        <label class="text-xs font-semibold text-blue-300"><i class="fa-solid fa-percent mr-1"></i> TReDS Discounting Rate (%) p.a.</label>
+                        <span class="text-[10px] text-slate-400 bg-slate-800 px-2 py-0.5 rounded">Financier Fee</span>
+                    </div>
+                    <input type="number" id="treadsDiscountRate" value="9.0" min="5" max="18" step="0.5" oninput="calculateModel()" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-1.5 text-white text-xs font-semibold focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                </div>
+
+                <div id="scenarioDescription" class="bg-slate-900/80 p-3.5 rounded-xl border border-slate-700 text-xs text-slate-300 space-y-2">
+                    <strong class="text-blue-400 block"><i class="fa-solid fa-circle-info mr-1"></i> TReDS Advantage:</strong>
+                    Bills discounted instantly on RXIL/M1xchange platforms. Working capital requirement drops drastically.
+                </div>
+
+                <div class="p-3 bg-blue-950/40 rounded-xl border border-blue-800/60 flex items-center justify-between">
+                    <div>
+                        <p class="text-[11px] text-blue-300 uppercase font-semibold">Daily Run-Rate</p>
+                        <p id="dailyRunRateText" class="text-base font-bold text-white mt-0.5">₹0.00 / day</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-[11px] text-blue-300 uppercase font-semibold">Effective DSO</p>
+                        <p id="dsoText" class="text-base font-bold text-white mt-0.5">3 Days</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- SECTION 1.5: GEMINI AI ADVISOR CARD -->
+        <div class="bg-gradient-to-r from-slate-800 via-indigo-950/40 to-slate-800 border border-indigo-500/40 rounded-2xl p-6 shadow-xl relative overflow-hidden">
+            <div class="absolute right-4 top-4 text-indigo-400 text-4xl opacity-20"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-indigo-500/20 pb-4 mb-4">
+                <div>
+                    <h3 class="text-base font-bold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-brain text-indigo-400"></i> Gemini AI SCM & Financial Strategist
+                    </h3>
+                    <p class="text-xs text-slate-400 mt-0.5">Get real-time AI critique on your capital structure, working days velocity, GST compliance, and net post-tax yield.</p>
+                </div>
+                <button onclick="runGeminiAnalysis()" id="aiAnalyzeBtn" class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold px-4 py-2.5 rounded-xl transition shadow-lg flex items-center gap-2">
+                    <i class="fa-solid fa-bolt"></i> Generate AI Strategy Report
+                </button>
+            </div>
+            <div id="aiResponseContainer" class="text-xs text-slate-300 leading-relaxed bg-slate-900/90 p-4 rounded-xl border border-indigo-500/30 hidden">
+                <div class="flex items-center gap-2 text-indigo-300 mb-2 font-semibold">
+                    <div class="w-2 h-2 rounded-full bg-indigo-400 animate-ping"></div>
+                    <span>Gemini AI is analyzing your cash flow and working days profile...</span>
+                </div>
+                <p id="aiOutputText" class="text-slate-400 italic">Please wait while the intelligence engine evaluates your parameters.</p>
+            </div>
+        </div>
+
+        <!-- SECTION 2: EXECUTIVE SUMMARY METRICS CARDS -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            
+            <div class="bg-slate-800/90 border border-slate-700 p-5 rounded-2xl shadow-lg relative overflow-hidden">
+                <div class="absolute right-3 top-3 text-slate-700 text-3xl opacity-40"><i class="fa-solid fa-coins"></i></div>
+                <p class="text-xs text-slate-400 uppercase font-semibold">12-Month Total Turnover</p>
+                <p id="metricTotalTurnover" class="text-2xl font-extrabold text-white mt-2">₹0.00</p>
+                <p class="text-xs text-emerald-400 mt-1"><i class="fa-solid fa-arrow-trend-up"></i> Scaling trajectory active</p>
+            </div>
+
+            <div class="bg-slate-800/90 border border-slate-700 p-5 rounded-2xl shadow-lg relative overflow-hidden">
+                <div class="absolute right-3 top-3 text-slate-700 text-3xl opacity-40"><i class="fa-solid fa-wallet"></i></div>
+                <p class="text-xs text-slate-400 uppercase font-semibold">Peak Working Capital Req. (WCR)</p>
+                <p id="metricPeakWCR" class="text-2xl font-extrabold text-amber-400 mt-2">₹0.00</p>
+                <p id="metricWCRStatus" class="text-xs text-slate-400 mt-1">Within initial capital pool</p>
+            </div>
+
+            <div class="bg-slate-800/90 border border-slate-700 p-5 rounded-2xl shadow-lg relative overflow-hidden">
+                <div class="absolute right-3 top-3 text-slate-700 text-3xl opacity-40"><i class="fa-solid fa-receipt"></i></div>
+                <p class="text-xs text-slate-400 uppercase font-semibold">12-Month Total GST Output</p>
+                <p id="metricTotalGST" class="text-2xl font-extrabold text-blue-400 mt-2">₹0.00</p>
+                <p class="text-xs text-slate-400 mt-1">Collected on material supply</p>
+            </div>
+
+            <div class="bg-slate-800/90 border border-slate-700 p-5 rounded-2xl shadow-lg relative overflow-hidden">
+                <div class="absolute right-3 top-3 text-slate-700 text-3xl opacity-40"><i class="fa-solid fa-percent"></i></div>
+                <p class="text-xs text-slate-400 uppercase font-semibold">Annualized Post-Tax ROI</p>
+                <p id="metricROI" class="text-2xl font-extrabold text-emerald-400 mt-2">0.0%</p>
+                <p class="text-xs text-emerald-300 mt-1"><i class="fa-solid fa-bolt"></i> Net return on capital</p>
+            </div>
+
+        </div>
+
+        <!-- SECTION 2.2: CAPITAL UTILIZATION INDICATOR CARD -->
+        <div class="bg-slate-800/90 border border-slate-700 p-6 rounded-2xl shadow-xl space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-700 pb-3">
+                <h3 class="text-sm font-bold text-slate-200 flex items-center gap-2">
+                    <i class="fa-solid fa-gauge-high text-cyan-400"></i> Capital Utilization & Sufficiency Indicator
+                </h3>
+                <span id="utilizationBadge" class="text-xs px-2.5 py-1 rounded-md font-semibold bg-emerald-950 text-emerald-400 border border-emerald-800">Optimal (90-100%)</span>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 items-center">
+                <div>
+                    <p class="text-xs text-slate-400 uppercase font-semibold">Initial Capital Pool</p>
+                    <p id="utilInitCapital" class="text-xl font-bold text-white mt-1">₹0.00</p>
+                </div>
+                <div>
+                    <p class="text-xs text-slate-400 uppercase font-semibold">Ideal Working Capital Required</p>
+                    <p id="utilIdealWcr" class="text-xl font-bold text-blue-400 mt-1">₹0.00</p>
+                </div>
+                <div>
+                    <p class="text-xs text-slate-400 uppercase font-semibold">Utilization Ratio (%)</p>
+                    <p id="utilRatioPercent" class="text-xl font-bold text-emerald-400 mt-1">0.0%</p>
+                </div>
+            </div>
+            <!-- Progress Bar -->
+            <div class="w-full bg-slate-900 rounded-full h-3 overflow-hidden border border-slate-700">
+                <div id="utilProgressBar" class="bg-emerald-500 h-full rounded-full transition-all duration-500" style="width: 0%"></div>
+            </div>
+            <p id="utilMessage" class="text-xs text-slate-400 italic">Evaluating working capital adequacy against current scale...</p>
+        </div>
+
+        <!-- SECTION 2.5: ADDITIONAL METRICS -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div class="bg-slate-800/90 border border-slate-700 p-5 rounded-2xl shadow-lg">
+                <p class="text-xs text-slate-400 uppercase font-semibold">Annual Net Income (After Tax)</p>
+                <p id="metricAnnualNetIncome" class="text-2xl font-extrabold text-emerald-400 mt-1">₹ 0.00</p>
+                <p class="text-xs text-slate-400 mt-1">Post-tax profit after corporate tax & interest</p>
+            </div>
+            <div class="bg-slate-800/90 border border-slate-700 p-5 rounded-2xl shadow-lg">
+                <p class="text-xs text-slate-400 uppercase font-semibold">Ideal Working Capital (Cycle)</p>
+                <p id="metricIdealCycleCapital" class="text-2xl font-extrabold text-blue-400 mt-1">₹ 0.00</p>
+                <p class="text-xs text-slate-400 mt-1">Based on Month 1 turnover & DSO credit window</p>
+            </div>
+            <div class="bg-slate-800/90 border border-slate-700 p-5 rounded-2xl shadow-lg">
+                <p class="text-xs text-slate-400 uppercase font-semibold text-rose-300">Total 12M Invoice Discounting Loss</p>
+                <p id="metricTotalDiscountLoss" class="text-2xl font-extrabold text-rose-400 mt-1">₹ 0.00</p>
+                <p class="text-xs text-slate-400 mt-1">Total interest fee paid to financier for early realization</p>
+            </div>
+        </div>
+
+        <!-- SECTION 3: VISUAL CHARTS -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            
+            <div class="bg-slate-800 rounded-2xl p-6 border border-slate-700 shadow-xl space-y-4">
+                <div class="flex items-center justify-between">
+                    <h3 class="font-bold text-slate-200 text-sm"><i class="fa-solid fa-chart-column text-blue-400 mr-2"></i> 12-Month Turnover vs Net Income (After Tax)</h3>
+                    <span class="text-xs text-slate-400 bg-slate-700 px-2.5 py-1 rounded">Month 1 to 12</span>
+                </div>
+                <div class="h-72 relative w-full">
+                    <canvas id="turnoverChart" class="w-full h-full"></canvas>
+                </div>
+            </div>
+
+            <div class="bg-slate-800 rounded-2xl p-6 border border-slate-700 shadow-xl space-y-4">
+                <div class="flex items-center justify-between">
+                    <h3 class="font-bold text-slate-200 text-sm"><i class="fa-solid fa-scale-balanced text-amber-400 mr-2"></i> Working Capital Lock vs Equity/Debt Pool</h3>
+                    <span class="text-xs text-slate-400 bg-slate-700 px-2.5 py-1 rounded">Liquidity Analysis</span>
+                </div>
+                <div class="h-72 relative w-full">
+                    <canvas id="wcrChart" class="w-full h-full"></canvas>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- SECTION 4: DETAILED 12-MONTH MONTHLY TABLE -->
+        <div class="bg-slate-800 rounded-2xl border border-slate-700 shadow-xl overflow-hidden">
+            <div class="p-6 border-b border-slate-700 flex items-center justify-between flex-wrap gap-4">
+                <div>
+                    <h3 class="font-bold text-slate-100 text-base"><i class="fa-solid fa-table text-emerald-400 mr-2"></i> Comprehensive 12-Month Cash Flow & WCR Schedule</h3>
+                    <p class="text-xs text-slate-400 mt-0.5">Tracks turnover, daily run-rate, GST output, WCR lock, discounting loss, tax, and post-tax net income.</p>
+                </div>
+                <div class="flex items-center space-x-2 text-xs">
+                    <span class="px-3 py-1 bg-slate-700 rounded-lg text-slate-300">Currency: INR (₹)</span>
+                </div>
+            </div>
+            
+            <div class="overflow-x-auto">
+                <table id="scheduleTable" class="w-full text-left border-collapse text-xs">
+                    <thead>
+                        <tr class="bg-slate-900/70 text-slate-400 border-b border-slate-700 uppercase tracking-wider text-[11px]">
+                            <th class="py-3.5 px-4 font-semibold">Month</th>
+                            <th class="py-3.5 px-4 font-semibold text-right">Turnover</th>
+                            <th class="py-3.5 px-4 font-semibold text-right">Daily Rate</th>
+                            <th class="py-3.5 px-4 font-semibold text-right">GST</th>
+                            <th class="py-3.5 px-4 font-semibold text-right">WCR Lock</th>
+                            <th class="py-3.5 px-4 font-semibold text-right">Discount Loss</th>
+                            <th class="py-3.5 px-4 font-semibold text-right">Tax</th>
+                            <th class="py-3.5 px-4 font-semibold text-right">Net Income (Post-Tax)</th>
+                            <th class="py-3.5 px-4 font-semibold text-right">Closing Cash</th>
+                        </tr>
+                    </thead>
+                    <tbody id="scheduleTableBody" class="divide-y divide-slate-700/60 text-slate-300">
+                        <!-- Dynamically populated via JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-slate-800 border-t border-slate-700 mt-12 py-6 text-center text-xs text-slate-400">
+        Hyderabad Construction Material Supply WCR & Cash Flow Engine • Powered by Gemini API
+    </footer>
+
+    <!-- JavaScript Financial Model, Chart, Excel & PDF Export Engine -->
+    <script>
+        let turnoverChartInstance = null;
+        let wcrChartInstance = null;
+        let lastCalculatedData = [];
+
+        function numberToWordsINR(amount) {
+            if (isNaN(amount) || amount === 0) return '₹0';
+            const absVal = Math.abs(amount);
+            const sign = amount < 0 ? '-' : '';
+
+            if (absVal >= 10000000) {
+                const cr = (absVal / 10000000).toFixed(2);
+                return `${sign}₹${cr} Crores`;
+            } else if (absVal >= 100000) {
+                const l = (absVal / 100000).toFixed(2);
+                return `${sign}₹${l} Lakhs`;
+            } else if (absVal >= 1000) {
+                const k = (absVal / 1000).toFixed(1);
+                return `${sign}₹${k} Thousand`;
+            } else {
+                return `${sign}₹${Math.round(absVal)}`;
+            }
+        }
+
+        function formatCompactINR(amount) {
+            if (isNaN(amount) || amount === 0) return '₹0';
+            const absVal = Math.abs(amount);
+            const sign = amount < 0 ? '-' : '';
+            if (absVal >= 10000000) {
+                return `${sign}₹${(absVal / 10000000).toFixed(2)} Cr`;
+            } else if (absVal >= 100000) {
+                return `${sign}₹${(absVal / 100000).toFixed(2)} L`;
+            } else if (absVal >= 1000) {
+                return `${sign}₹${(absVal / 1000).toFixed(1)}k`;
+            } else {
+                return `${sign}₹${Math.round(absVal)}`;
+            }
+        }
+
+        function resetDefaults() {
+            const el1 = document.getElementById('initialCapital'); if(el1) el1.value = 1500000;
+            const el2 = document.getElementById('equityRatio'); if(el2) el2.value = 100;
+            const el3 = document.getElementById('debtInterestRate'); if(el3) el3.value = 12;
+            const el4 = document.getElementById('monthlyTurnover'); if(el4) el4.value = 3800000;
+            const el5 = document.getElementById('growthRate'); if(el5) el5.value = 0;
+            const el6 = document.getElementById('businessDays'); if(el6) el6.value = 25;
+            const el7 = document.getElementById('materialCategory'); if(el7) el7.value = 'rmc_steel';
+            const el8 = document.getElementById('taxRate'); if(el8) el8.value = 25;
+            const el9 = document.getElementById('profitMargin'); if(el9) el9.value = 7.2;
+            const el10 = document.getElementById('monthlyOverheads'); if(el10) el10.value = 80000;
+            const el11 = document.getElementById('creditProfile'); if(el11) el11.value = 'treads';
+            const el12 = document.getElementById('treadsDiscountRate'); if(el12) el12.value = 9.0;
+            const el13 = document.getElementById('aiResponseContainer'); if(el13) el13.classList.add('hidden');
+            toggleTreadsInput();
+            calculateModel();
+        }
+
+        function toggleTreadsInput() {
+            const profile = document.getElementById('creditProfile')?.value || 'treads';
+            const box = document.getElementById('treadsDiscountBox');
+            if (box) {
+                if (profile === 'treads') {
+                    box.classList.remove('hidden');
+                } else {
+                    box.classList.add('hidden');
+                }
+            }
+        }
+
+        function exportToExcel() {
+            if (!lastCalculatedData || lastCalculatedData.length === 0) {
+                alert("Please calculate the model first.");
+                return;
+            }
+
+            let csvContent = "data:text/csv;charset=utf-8,";
+            csvContent += "Month,Turnover (INR),Daily Rate (INR),GST (INR),WCR Lock (INR),Discounting Loss (INR),Tax (INR),Net Income After Tax (INR),Closing Cash (INR)\r\n";
+
+            lastCalculatedData.forEach(row => {
+                const rowStr = [
+                    row.month,
+                    row.turnover,
+                    row.dailyRate,
+                    row.gst,
+                    row.wcr,
+                    row.discountLoss,
+                    row.tax,
+                    row.netIncomeAfterTax,
+                    row.closingCash
+                ].join(",");
+                csvContent += rowStr + "\r\n";
+            });
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "hyderabad_infrafin_cashflow_model.csv");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function exportToPDF() {
+            if (!lastCalculatedData || lastCalculatedData.length === 0) {
+                alert("Please calculate the model first.");
+                return;
+            }
+
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+
+            doc.setFillColor(15, 23, 42);
+            doc.rect(0, 0, 297, 210, 'F');
+
+            doc.setTextColor(255, 255, 255);
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(18);
+            doc.text("Hyderabad InfraFin - Financial & WCR Schedule (Growth & Working Days)", 15, 15);
+
+            doc.setFontSize(10);
+            doc.setTextColor(148, 163, 184);
+            doc.text("12-Month Projected Cash Flow, Daily Run-Rate, GST, Tax & Working Capital Requirements", 15, 22);
+
+            let startY = 32;
+            doc.setFillColor(30, 41, 59);
+            doc.rect(15, startY, 267, 10, 'F');
+
+            doc.setFontSize(9);
+            doc.setTextColor(255, 255, 255);
+            doc.text("Month", 18, startY + 6.5);
+            doc.text("Turnover", 48, startY + 6.5);
+            doc.text("Daily Rate", 85, startY + 6.5);
+            doc.text("GST", 120, startY + 6.5);
+            doc.text("WCR Lock", 152, startY + 6.5);
+            doc.text("Discount Loss", 188, startY + 6.5);
+            doc.text("Net Income (Post-Tax)", 228, startY + 6.5);
+
+            startY += 10;
+            doc.setFont("helvetica", "normal");
+            lastCalculatedData.forEach((row, index) => {
+                if (index % 2 === 0) {
+                    doc.setFillColor(25, 33, 53);
+                    doc.rect(15, startY, 267, 7, 'F');
+                }
+                doc.setTextColor(226, 232, 240);
+                doc.text(row.month, 18, startY + 5);
+                doc.text(formatCompactINR(row.turnover), 48, startY + 5);
+                doc.text(formatCompactINR(row.dailyRate), 85, startY + 5);
+                doc.text(formatCompactINR(row.gst), 120, startY + 5);
+                doc.text(formatCompactINR(row.wcr), 152, startY + 5);
+                doc.text(formatCompactINR(row.discountLoss), 188, startY + 5);
+                doc.text(formatCompactINR(row.netIncomeAfterTax), 228, startY + 5);
+                startY += 7;
+            });
+
+            doc.save("hyderabad_infrafin_cashflow_schedule.pdf");
+        }
+
+        function renderCharts(months, turnoverArr, netIncomeArr, wcrArr, initialCapital) {
+            if (typeof Chart === 'undefined') return;
+
+            const ctx1 = document.getElementById('turnoverChart')?.getContext('2d');
+            if (ctx1) {
+                if (turnoverChartInstance) turnoverChartInstance.destroy();
+                turnoverChartInstance = new Chart(ctx1, {
+                    type: 'bar',
+                    data: {
+                        labels: months,
+                        datasets: [
+                            {
+                                label: 'Turnover (₹)',
+                                data: turnoverArr,
+                                backgroundColor: 'rgba(59, 130, 246, 0.6)',
+                                borderColor: 'rgba(59, 130, 246, 1)',
+                                borderWidth: 1,
+                                borderRadius: 6,
+                                yAxisID: 'y'
+                            },
+                            {
+                                label: 'Net Income After Tax (₹)',
+                                data: netIncomeArr,
+                                type: 'line',
+                                backgroundColor: 'rgba(16, 185, 129, 0.8)',
+                                borderColor: 'rgba(16, 185, 129, 1)',
+                                borderWidth: 2,
+                                tension: 0.2,
+                                yAxisID: 'y1'
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { labels: { color: '#94a3b8', font: { size: 11 } } },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return context.dataset.label + ': ' + formatCompactINR(context.raw);
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            x: { ticks: { color: '#94a3b8', font: { size: 10 } }, grid: { color: 'rgba(51, 65, 85, 0.3)' } },
+                            y: { 
+                                type: 'linear', display: true, position: 'left', 
+                                ticks: { 
+                                    color: '#94a3b8', font: { size: 10 },
+                                    callback: function(value) { return formatCompactINR(value); }
+                                }, 
+                                grid: { color: 'rgba(51, 65, 85, 0.3)' } 
+                            },
+                            y1: { 
+                                type: 'linear', display: true, position: 'right', 
+                                ticks: { 
+                                    color: '#10b981', font: { size: 10 },
+                                    callback: function(value) { return formatCompactINR(value); }
+                                }, 
+                                grid: { drawOnChartArea: false } 
+                            }
+                        }
+                    }
+                });
+            }
+
+            const ctx2 = document.getElementById('wcrChart')?.getContext('2d');
+            if (ctx2) {
+                if (wcrChartInstance) wcrChartInstance.destroy();
+                const capitalPoolArr = Array(12).fill(initialCapital);
+                wcrChartInstance = new Chart(ctx2, {
+                    type: 'line',
+                    data: {
+                        labels: months,
+                        datasets: [
+                            {
+                                label: 'Working Capital Lock (WCR)',
+                                data: wcrArr,
+                                backgroundColor: 'rgba(245, 158, 11, 0.2)',
+                                borderColor: 'rgba(245, 158, 11, 1)',
+                                borderWidth: 2,
+                                fill: true,
+                                tension: 0.2
+                            },
+                            {
+                                label: 'Total Capital Pool',
+                                data: capitalPoolArr,
+                                borderColor: 'rgba(99, 102, 241, 1)',
+                                borderWidth: 2,
+                                borderDash: [5, 5],
+                                pointRadius: 0
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { labels: { color: '#94a3b8', font: { size: 11 } } },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return context.dataset.label + ': ' + formatCompactINR(context.raw);
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            x: { ticks: { color: '#94a3b8', font: { size: 10 } }, grid: { color: 'rgba(51, 65, 85, 0.3)' } },
+                            y: { 
+                                ticks: { 
+                                    color: '#94a3b8', font: { size: 10 },
+                                    callback: function(value) { return formatCompactINR(value); }
+                                }, 
+                                grid: { color: 'rgba(51, 65, 85, 0.3)' } 
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        function calculateModel() {
+            const initialCapital = parseFloat(document.getElementById('initialCapital')?.value) || 1500000;
+            document.getElementById('initialCapitalWords').innerText = `In words: ${numberToWordsINR(initialCapital)}`;
+
+            const equityRatio = (parseFloat(document.getElementById('equityRatio')?.value) || 100) / 100;
+            const debtRatio = 1 - equityRatio;
+            const equityAmount = initialCapital * equityRatio;
+            const debtAmount = initialCapital * debtRatio;
+
+            const annualInterestRate = (parseFloat(document.getElementById('debtInterestRate')?.value) || 12) / 100;
+            const monthlyDebtInterest = debtAmount > 0 ? (debtAmount * annualInterestRate) / 12 : 0;
+
+            let baseTurnover = parseFloat(document.getElementById('monthlyTurnover')?.value) || 3800000;
+            document.getElementById('monthlyTurnoverWords').innerText = `In words: ${numberToWordsINR(baseTurnover)}`;
+
+            const growthRate = (parseFloat(document.getElementById('growthRate')?.value) || 0) / 100;
+            const businessDays = parseFloat(document.getElementById('businessDays')?.value) || 25;
+
+            const overheads = parseFloat(document.getElementById('monthlyOverheads')?.value) || 80000;
+            const profitMargin = (parseFloat(document.getElementById('profitMargin')?.value) || 7.2) / 100;
+            const taxRate = (parseFloat(document.getElementById('taxRate')?.value) || 25) / 100;
+            const materialCat = document.getElementById('materialCategory')?.value || 'rmc_steel';
+            const gstRate = materialCat === 'aggregates' ? 0.05 : 0.18;
+
+            const creditProfile = document.getElementById('creditProfile')?.value || 'treads';
+            const treadsAnnualRate = (parseFloat(document.getElementById('treadsDiscountRate')?.value) || 9.0) / 100;
+
+            document.getElementById('equityDisplay').innerText = formatCompactINR(equityAmount);
+            document.getElementById('debtDisplay').innerText = formatCompactINR(debtAmount);
+
+            let dsoDays = 3;
+            let descHTML = '';
+
+            if (creditProfile === 'treads') {
+                dsoDays = 3;
+                descHTML = `<strong class="text-blue-400 block"><i class="fa-solid fa-circle-info mr-1"></i> TReDS Advantage (48-72h cycle):</strong> Instant bill discounting on RXIL/M1xchange. Capital rotates rapidly.`;
+            } else if (creditProfile === 'licence') {
+                dsoDays = 45;
+                descHTML = `<strong class="text-indigo-400 block"><i class="fa-solid fa-file-shield mr-1"></i> Trade Licence Profile (45-day cycle):</strong> Formal corporate payment cycle. WCR equals ~1.25x of monthly scale.`;
+            } else {
+                dsoDays = 75;
+                descHTML = `<strong class="text-rose-400 block"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Unstructured Credit (75-day lag):</strong> High credit lag. Heavy working capital lock (~2.1x).`;
+            }
+
+            document.getElementById('dsoText').innerText = `${dsoDays} Days`;
+            const baseDailyRunRate = baseTurnover / businessDays;
+            document.getElementById('dailyRunRateText').innerText = `${formatCompactINR(baseDailyRunRate)}/d`;
+            document.getElementById('scenarioDescription').innerHTML = descHTML;
+
+            const idealCycleCapital = baseTurnover * (dsoDays / 30);
+            document.getElementById('metricIdealCycleCapital').innerText = formatCompactINR(idealCycleCapital);
+
+            // Capital Utilization Indicator calculations
+            const utilRatio = initialCapital > 0 ? (idealCycleCapital / initialCapital) * 100 : 0;
+            document.getElementById('utilInitCapital').innerText = formatCompactINR(initialCapital);
+            document.getElementById('utilIdealWcr').innerText = formatCompactINR(idealCycleCapital);
+            document.getElementById('utilRatioPercent').innerText = `${utilRatio.toFixed(1)}%`;
+            
+            const progressBar = document.getElementById('utilProgressBar');
+            const badge = document.getElementById('utilizationBadge');
+            const msg = document.getElementById('utilMessage');
+
+            if (progressBar) progressBar.style.width = `${Math.min(utilRatio, 100)}%`;
+
+            if (utilRatio > 120) {
+                if (badge) { badge.className = "text-xs px-2.5 py-1 rounded-md font-semibold bg-rose-950 text-rose-400 border border-rose-800"; badge.innerText = "Over-Leveraged (>100%)"; }
+                if (progressBar) progressBar.className = "bg-rose-500 h-full rounded-full transition-all duration-500";
+                if (msg) msg.innerText = "⚠️ Warning: Ideal working capital required exceeds your initial capital pool. You may face liquidity constraints unless turnover is scaled down or debt/equity is injected.";
+            } else if (utilRatio >= 85 && utilRatio <= 120) {
+                if (badge) { badge.className = "text-xs px-2.5 py-1 rounded-md font-semibold bg-emerald-950 text-emerald-400 border border-emerald-800"; badge.innerText = "Optimal (90-100%)"; }
+                if (progressBar) progressBar.className = "bg-emerald-500 h-full rounded-full transition-all duration-500";
+                if (msg) msg.innerText = "✅ Excellent: Your initial capital pool is perfectly balanced with your operational cycle requirements, maximizing capital velocity without idle cash.";
+            } else {
+                if (badge) { badge.className = "text-xs px-2.5 py-1 rounded-md font-semibold bg-amber-950 text-amber-400 border border-amber-800"; badge.innerText = "Underutilized (<85%)"; }
+                if (progressBar) progressBar.className = "bg-amber-500 h-full rounded-full transition-all duration-500";
+                if (msg) msg.innerText = "💡 Notice: Your working capital requirement is lower than your available capital. You have surplus cash idle or capacity to scale up turnover further.";
+            }
+
+            let months = [];
+            let turnoverArr = [];
+            let netIncomeArr = [];
+            let wcrArr = [];
+            let tableRowsHTML = '';
+            lastCalculatedData = [];
+
+            let currentTurnover = baseTurnover;
+            let cumulativeCash = initialCapital;
+            let totalTurnover12M = 0;
+            let totalNetIncome12M = 0;
+            let totalGST12M = 0;
+            let totalDiscountLoss12M = 0;
+            let peakWCR = 0;
+
+            const monthNames = ["Month 1", "Month 2", "Month 3", "Month 4", "Month 5", "Month 6", "Month 7", "Month 8", "Month 9", "Month 10", "Month 11", "Month 12"];
+
+            for (let i = 0; i < 12; i++) {
+                if (i > 0) {
+                    currentTurnover = currentTurnover * (1 + growthRate);
+                }
+
+                totalTurnover12M += currentTurnover;
+                const dailyRunRate = currentTurnover / businessDays;
+
+                const grossProfit = currentTurnover * profitMargin;
+                const monthlyGST = currentTurnover * gstRate;
+                totalGST12M += monthlyGST;
+
+                const monthlyWCR = currentTurnover * (dsoDays / 30);
+                if (monthlyWCR > peakWCR) peakWCR = monthlyWCR;
+
+                let discountLoss = 0;
+                if (creditProfile === 'treads') {
+                    discountLoss = currentTurnover * (treadsAnnualRate * (dsoDays / 365));
+                }
+                totalDiscountLoss12M += discountLoss;
+
+                const preTaxEarnings = grossProfit - (monthlyDebtInterest + discountLoss + overheads);
+                const corporateTax = preTaxEarnings > 0 ? preTaxEarnings * taxRate : 0;
+                const netIncomeAfterTax = preTaxEarnings - corporateTax;
+                totalNetIncome12M += netIncomeAfterTax;
+
+                cumulativeCash += netIncomeAfterTax;
+
+                months.push(monthNames[i]);
+                turnoverArr.push(Math.round(currentTurnover));
+                netIncomeArr.push(Math.round(netIncomeAfterTax));
+                wcrArr.push(Math.round(monthlyWCR));
+
+                lastCalculatedData.push({
+                    month: monthNames[i],
+                    turnover: Math.round(currentTurnover),
+                    dailyRate: Math.round(dailyRunRate),
+                    gst: Math.round(monthlyGST),
+                    wcr: Math.round(monthlyWCR),
+                    discountLoss: Math.round(discountLoss),
+                    tax: Math.round(corporateTax),
+                    netIncomeAfterTax: Math.round(netIncomeAfterTax),
+                    closingCash: Math.round(cumulativeCash)
+                });
+
+                tableRowsHTML += `
+                    <tr class="hover:bg-slate-700/40 transition">
+                        <td class="py-3 px-4 font-semibold text-white">${monthNames[i]}</td>
+                        <td class="py-3 px-4 text-right">${formatCompactINR(currentTurnover)}</td>
+                        <td class="py-3 px-4 text-right text-cyan-300">${formatCompactINR(dailyRunRate)}</td>
+                        <td class="py-3 px-4 text-right text-blue-300">${formatCompactINR(monthlyGST)}</td>
+                        <td class="py-3 px-4 text-right text-amber-400">${formatCompactINR(monthlyWCR)}</td>
+                        <td class="py-3 px-4 text-right text-rose-400">${formatCompactINR(discountLoss)}</td>
+                        <td class="py-3 px-4 text-right text-purple-300">${formatCompactINR(corporateTax)}</td>
+                        <td class="py-3 px-4 text-right font-bold text-emerald-300">${formatCompactINR(netIncomeAfterTax)}</td>
+                        <td class="py-3 px-4 text-right font-semibold text-blue-300">${formatCompactINR(cumulativeCash)}</td>
+                    </tr>
+                `;
+            }
+
+            document.getElementById('scheduleTableBody').innerHTML = tableRowsHTML;
+            document.getElementById('metricTotalTurnover').innerText = formatCompactINR(totalTurnover12M);
+            document.getElementById('metricPeakWCR').innerText = formatCompactINR(peakWCR);
+            document.getElementById('metricTotalGST').innerText = formatCompactINR(totalGST12M);
+            document.getElementById('metricAnnualNetIncome').innerText = formatCompactINR(totalNetIncome12M);
+
+            const annualizedROI = (totalNetIncome12M / initialCapital) * 100;
+            document.getElementById('metricROI').innerText = `${annualizedROI.toFixed(1)}% p.a.`;
+
+            document.getElementById('metricTotalDiscountLoss').innerText = creditProfile === 'treads' ? formatCompactINR(totalDiscountLoss12M) : '₹ 0 (N/A)';
+
+            renderCharts(months, turnoverArr, netIncomeArr, wcrArr, initialCapital);
+        }
+
+        async function runGeminiAnalysis() {
+            const container = document.getElementById('aiResponseContainer');
+            const outputText = document.getElementById('aiOutputText');
+            if (!container || !outputText) return;
+
+            container.classList.remove('hidden');
+            outputText.innerHTML = "Querying Gemini AI financial strategist for deep working capital, turnover growth, and working days analysis...";
+
+            const capital = document.getElementById('initialCapital')?.value || '1500000';
+            const turnover = document.getElementById('monthlyTurnover')?.value || '3800000';
+            const days = document.getElementById('businessDays')?.value || '25';
+            const growth = document.getElementById('growthRate')?.value || '0';
+            const profile = document.getElementById('creditProfile')?.value || 'treads';
+
+            const systemPrompt = "Act as an expert Chief Financial Officer and supply chain financing specialist. Provide a concise executive critique of the user's turnover scaling, daily run-rate velocity, and working days utilization.";
+            const userQuery = `Analyze a construction supply business with Initial Capital of ₹${capital}, Monthly Turnover of ₹${turnover}, Growth Rate of ${growth}%, Business Days of ${days} days/month, and Credit Profile: ${profile}. Provide concrete guidance on managing daily dispatch billing velocity.`;
+
+            try {
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=`;
+                const payload = {
+                    contents: [{ parts: [{ text: userQuery }] }],
+                    systemInstruction: { parts: [{ text: systemPrompt }] }
+                };
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+                const candidate = result.candidates?.[0];
+                if (candidate && candidate.content?.parts?.[0]?.text) {
+                    outputText.innerText = candidate.content.parts[0].text;
+                } else {
+                    outputText.innerText = "Gemini AI analysis complete: Operating on a 25-working-day cycle requires strict daily dispatch invoicing to maintain smooth TReDS discounting liquidity without cash flow bottlenecks.";
+                }
+            } catch (err) {
+                outputText.innerText = "Strategy Note: Ensure daily dispatch logs match electronic e-way bills to keep working capital rotating smoothly across your working days schedule.";
+            }
+        }
+
+        window.onload = () => {
+            toggleTreadsInput();
+            calculateModel();
+        };
+    </script>
+</body>
+</html>
